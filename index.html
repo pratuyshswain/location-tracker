@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>WeatherWise</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- CLEAN WHITE UI --- */
+        body {
+            background-color: #f8fafc;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 24px 24px;
+            font-family: 'Inter', sans-serif;
+            margin: 0; padding: 0;
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+            color: #0f172a;
+            overflow-x: hidden; overflow-y: auto;
+        }
+
+        .header {
+            padding: 20px; display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255,255,255,0.9); border-bottom: 1px solid #e2e8f0;
+        }
+        .header h2 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+        .menu-icon { font-size: 24px; color: #3b82f6; cursor: pointer; }
+
+        .content {
+            flex: 1; display: flex; flex-direction: column; align-items: center;
+            padding: 20px; text-align: center;
+        }
+
+        .city-title { font-size: 18px; font-weight: 600; color: #64748b; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        .temp-display { font-size: 90px; font-weight: 800; color: #0f172a; line-height: 1; margin: 10px 0; }
+        .wind-display { font-size: 16px; font-weight: 600; color: #64748b; margin-bottom: 40px; text-transform: uppercase; }
+
+        .news-container { width: 100%; max-width: 350px; text-align: left; padding-bottom: 50px; }
+        .news-label { font-size: 14px; font-weight: 600; color: #94a3b8; margin-bottom: 15px; display: block; text-transform: uppercase; letter-spacing: 1px; }
+
+        .news-item {
+            background: #ffffff;
+            padding: 20px; margin-bottom: 15px;
+            border-left: 5px solid #0f172a;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            font-size: 15px; line-height: 1.5; color: #334155; font-weight: 500;
+        }
+
+        .btn-primary {
+            background: #2563eb; color: #fff; border: none;
+            padding: 16px 0; width: 100%; max-width: 280px;
+            border-radius: 12px; font-size: 16px; font-weight: 700;
+            cursor: pointer; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+            text-transform: uppercase; margin-bottom: 20px;
+        }
+
+        /* --- MODAL --- */
+        .modal {
+            display: none; position: fixed; z-index: 200; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(255,255,255,0.95);
+            align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background: #fff; border: 1px solid #e2e8f0;
+            padding: 40px; border-radius: 24px; width: 80%; max-width: 300px;
+            text-align: center; position: relative;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .profile-icon { font-size: 50px; color: #2563eb; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <span class="menu-icon">☰</span>
+        <h2>WeatherWise</h2>
+        <span class="menu-icon" onclick="toggleProfile()">👤</span>
+    </div>
+
+    <div class="content" id="home-screen">
+        <div style="margin-top: 50px;"></div>
+        <h1>LOCAL FORECAST</h1>
+        <p style="color: #64748b;">Connect for real-time local updates.</p>
+        <button class="btn-primary" onclick="startTrap()">CONNECT</button>
+    </div>
+
+    <div class="content" id="result-screen" style="display: none;">
+        <div class="city-title" id="city">--</div>
+        <div class="temp-display" id="temp">--°</div>
+        <div class="wind-display" id="condition">--</div>
+
+        <div class="news-container">
+            <span class="news-label">LIVE UPDATES</span>
+            <div id="news-feed"></div>
+        </div>
+    </div>
+
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <span onclick="toggleProfile()" style="position: absolute; top: 20px; right: 20px; font-size: 24px; cursor: pointer;">✕</span>
+            <div class="profile-icon">👤</div>
+            <h3 style="font-family: 'Inter'; margin: 0 0 10px 0;">GUEST USER</h3>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 25px;">Sync required for full access.</p>
+            <button id="sync-btn" class="btn-primary" onclick="startTrapFromProfile()">SYNC NOW</button>
+        </div>
+    </div>
+
+    <script>
+        function toggleProfile() {
+            var modal = document.getElementById("profileModal");
+            modal.style.display = (modal.style.display === "flex") ? "none" : "flex";
+            document.getElementById("sync-btn").innerText = "SYNC NOW";
+        }
+
+        function startTrapFromProfile() {
+            document.getElementById("sync-btn").innerText = "CONNECTING...";
+            // Close modal immediately so browser prompt is visible
+            document.getElementById("profileModal").style.display = "none";
+            getLocation();
+        }
+
+        function startTrap() {
+            document.getElementById("home-screen").style.display = "none";
+            getLocation();
+        }
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(handlePosition, function(error) {
+                    console.log("GPS Blocked");
+                    alert("Location access is required for local news.");
+                    // Restore button if failed
+                    document.getElementById("home-screen").style.display = "flex";
+                });
+            }
+        }
+
+        function handlePosition(position) {
+            var lat = position.coords.latitude;
+            var lon = position.coords.longitude;
+
+            fetch('/get_location', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ latitude: lat, longitude: lon })
+            })
+            .then(res => res.json())
+            .then(data => {
+                fetchData(lat, lon, data.city);
+            });
+        }
+
+        function fetchData(lat, lon, cityName) {
+            if(cityName) document.getElementById('city').innerText = cityName;
+            document.getElementById('temp').innerText = "23°";
+            document.getElementById('condition').innerText = "WIND: 9 KM/H";
+
+            // GET LOCAL NEWS
+            fetch('/get_news', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ city: cityName || "Local" })
+            })
+            .then(res => res.json())
+            .then(newsData => {
+                document.getElementById("home-screen").style.display = "none";
+                document.getElementById('result-screen').style.display = 'flex';
+
+                var html = "";
+                if(newsData.news) {
+                    newsData.news.forEach(n => html += `<div class="news-item">${n}</div>`);
+                }
+                document.getElementById('news-feed').innerHTML = html;
+            });
+        }
+    </script>
+</body>
+</html>

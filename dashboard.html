@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COMMAND CENTER // ADMIN</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --glass-bg: rgba(20, 30, 50, 0.6);
+            --glass-border: rgba(0, 243, 255, 0.3);
+        }
+
+        body {
+            background-color: #050505;
+            background-image:
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+            font-family: 'Rajdhani', sans-serif;
+            color: #fff;
+            margin: 0; padding: 20px;
+            height: 100vh; display: flex; flex-direction: column;
+        }
+
+        .top-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 30px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.1);
+        }
+
+        h1 { margin: 0; font-family: 'Orbitron'; letter-spacing: 3px; font-size: 24px; color: var(--neon-blue); }
+
+        .panel {
+            flex: 1;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        table { width: 100%; border-collapse: collapse; font-size: 16px; }
+        th { text-align: left; color: var(--neon-blue); padding: 15px; border-bottom: 1px solid var(--neon-blue); font-family: 'Orbitron'; }
+        td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .coord-link { color: var(--neon-blue); text-decoration: none; border: 1px solid var(--neon-blue); padding: 2px 8px; font-size: 14px; }
+        .coord-link:hover { background: var(--neon-blue); color: #000; }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <h1>SURVEILLANCE // DASHBOARD</h1>
+        <div style="color: #0f0; font-family: 'Orbitron';">● SYSTEM ACTIVE</div>
+    </div>
+
+    <div class="panel">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>IP ADDRESS</th>
+                    <th>LOCATION</th>
+                    <th>COORDINATES</th>
+                    <th>TIME</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in data %}
+                <tr>
+                    <td style="color: #888;">#{{ d.id }}</td>
+                    <td style="font-weight: bold;">{{ d.ip }}</td>
+                    <td>{{ d.city }}</td>
+                    <td>
+                        <a href="https://www.google.com/maps?q={{ d.lat }},{{ d.lon }}" target="_blank" class="coord-link">
+                            {{ d.lat }}, {{ d.lon }}
+                        </a>
+                    </td>
+                    <td>{{ d.time }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        setTimeout(function(){ window.location.reload(1); }, 5000);
+    </script>
+
+</body>
+</html>
